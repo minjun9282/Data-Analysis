@@ -32,3 +32,5 @@ def realestate_recommend(min_price, max_price, size, first_work_loc, second_work
     return final_df.to_excel('ss.xls', sheet_name='Sheet1')
 
 realestate_recommend(100000, 111000, 84, '강남구', '마포구')
+
+#학군과 직주근접 자료에 rating을 기반으로 해서 final_df에서도 선별하여 추천하도록 수정해야함. 동일 아파트 명은 group해서 보여줘도 되는데 다양한 실거래가 자료 볼 수 있도록 group화 안하는 것도 괜찮다고 생각함.
