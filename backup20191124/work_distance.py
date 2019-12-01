@@ -1,5 +1,7 @@
 #카카오지도의 행정지역 layer이용
-#인접한 행정지역이 시인 경우는 자차 30분기준. (강동-구리 가까움 연천군 포천시 멂) dictionary로 표현, 인접했지만 도로가 단절되있을경우 제외(지도로 애매할경우 각 행정지역 검색 후 최대 자차 30분이내만 인정, 고속도로로 이어져도 한번에 간다면 단절된게 아님), 최단시간 자차이용시 다른 구를 통한뒤 이동하는건 뻇음
+#인접한 행정지역이 시인 경우는 자차 30분기준. (강동-구리 가까움 연천군 포천시 멂) dictionary로 표현, 인접했지만 도로가 단절되있을경우 제외(지도로 애매할경우 각 행정지역 검색 후 최대 자차 30분이내만 인정, 고속도로로 이어져도 한번에 간다면 단절된게 아님). 최단시간 자차이용시 다른 구를 통한뒤 이동하는건 뻇음
+#key간의 거리를 계산할 수 있도록 서울시와 경기도의 행정지역을 key로, 그 지역과 인접한 지역(윗 기준까지 적용)을 value로 갖는 dictionary를 직접 작성함.
+
 distance = {
     '일산동구': ['일산서구', '덕양구'],
     '부천시': ['구로구', '양천구', '강서구'],
@@ -72,7 +74,6 @@ distance = {
 }
 
 seoul = [ '강남구', '강동구','강북구','강서구','관악구','광진구','구로구','금천구','노원구','도봉구','동대문구','동작구','마포구','서대문구','서초구','성동구','성북구','송파구','양천구','영등포구','용산구','은평구','종로구','중구','중랑구']
-#출처: https://www.coursera.org/lecture/python-social-network-analysis/distance-measures-SeNEl coursera 강좌
 
 def work_loc_rec(first_work_location, second_location):
     distance = {
@@ -149,13 +150,16 @@ def work_loc_rec(first_work_location, second_location):
     import networkx as nx
     from collections import Counter
 
+    #지역과 인접한 지역을 표현한 dictionary를 networkx모듈을 활용하면 그래프로 나타낸 후 key간의 거리를 계산할 수 있습니다.
     graph = nx.Graph(distance)
     first_shortest_path = nx.shortest_path_length(graph, first_work_location)
     second_shortest_path = nx.shortest_path_length(graph, second_location)
     
+    #first_work_location와 second_location의 두가지 입력 파라메타를 받은 것은 배우자가 있을 경우 더 가까웠으면 하는 일자리 지역을 first_work_location으로 받게 하기 위함입니다. 독신일 경우 동일한 값을 first_work_location과 second_location에 입력하면 됩니다.
     first_recommend_list = []
     second_recommend_list = []
 
+    #입력 파라메타로 준 지역과의 거리가 3이하인 지역들만 포함하는 list를 만듦니다.
     for i in list(first_shortest_path.keys()):
         if int(first_shortest_path[i]) <= 3:
             first_recommend_list.append((i, first_shortest_path[i]))
@@ -164,22 +168,23 @@ def work_loc_rec(first_work_location, second_location):
 
     for i in list(second_shortest_path.keys()):
         if int(second_shortest_path[i]) <= 3:
-            second_recommend_list.append((i, second_shortest_path[i]+1))
+            second_recommend_list.append((i, second_shortest_path[i]+1)) #second_location보다 first_work_location에 가중치를 두기 위해 second_shortest_path에는 +1을 추가했습니다.
     second_recommend_dict = dict(second_recommend_list)
 
+    #first_work_location에 기반한 추천 지역(거리가 3이하)와 second_location에 기반한 추천 지역을 병합합니다.
     dup_work_loc = list(set(first_recommend_dict.keys())&set(second_recommend_dict.keys()))
 
-    combined_dict = dict(Counter(first_recommend_dict)+ Counter(second_recommend_dict))
+    combined_dict = dict(Counter(first_recommend_dict)+ Counter(second_recommend_dict)) #같은 key값을 가진 경우 value끼리 단순 합할 수 있도록 작성한 코드입니다.
 
     recommend_list = []
 
+    #최종적으로 first_work_location과 second_work_loc으로 부터의 각각의 거리의 합이 5이하인 지역만 추천지 목록에 남도록 합니다.
     for i in dup_work_loc:
         if int(combined_dict[i]) <= 5:
             recommend_list.append((i, combined_dict[i]))
 
     recommend_dict = dict(recommend_list)
 
-    #양쪽의 중간이 아닌 한쪽만 가까운 것을 원할 경우..
     if recommend_dict == {}:
         return first_recommend_dict
     else:
