@@ -6,7 +6,7 @@ import numpy as np
 
 def realestate_recommend(min_price, max_price, size, first_work_loc, second_work_loc, filename):
     
-    conn = sqlite3.connect('real_deal20190304.db') #최근 4개월 실거래가가 기록된 데이터베이스에 연결합니다.
+    conn = sqlite3.connect('real_deal202001.db') #최근 4개월 실거래가가 기록된 데이터베이스에 연결합니다.
 
     #전용면적 84와 전용면적 59를 중점적으로 뒀습니다. 소수점 차이로 약간 차이나는 값을 보정해줬습니다.
     if size == 84 or size == 59:
