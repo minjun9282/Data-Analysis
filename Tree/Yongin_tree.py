@@ -1,0 +1,31 @@
+import pandas as pd
+import sqlite3
+
+
+df = pd.read_excel('경기도_용인시_가로수_20160501.xlsx', encoding='ISO-8859-1') # encoding='ISO-8859-1'은 'utf-8' codec can't decode byte 0xc1 in position 0: invalid start byte에 대한 해결방법
+# 그래도 한글이 뜨지 않아 확인해보니 공공데이터의 경우 cp949로 인코딩 되는 경우가 많아서 그렇다고 함. 출처: https://teddylee777.github.io/python/%EA%B3%B5%EA%B3%B5%EB%8D%B0%EC%9D%B4%ED%84%B0-%ED%95%9C%EA%B8%80%EA%B9%A8%EC%A7%90%ED%98%84%EC%83%81-%ED%95%B4%EA%B2%B0%EB%B0%A9%EB%B2%95
+# 그래도 안되길래 기존의 csv파일로 excel파일로 바꿔서 읽어들이니 잘 읽어옴.
+
+#1.용인시 가로수의 수종과 각 수종별 심어진 횟수 조사. 참고:https://rfriend.tistory.com/tag/%EC%9C%A0%EC%9D%BC%ED%95%9C%20%EA%B0%92%EB%B3%84%EB%A1%9C%20%EA%B0%9C%EC%88%98%20%EC%84%B8%EA%B8%B0%20pd.Series.value_counts%28%29
+sort_of_trees = []
+sort_of_trees.extend(df['수목명'].unique())
+numb_of_trees = []
+numb_of_trees.extend(df['수목명'].value_counts())
+
+semi_num_of_trees = pd.DataFrame(df['수목명'].value_counts())
+
+
+# 행의 index를 숫자로 조작할땐 iloc, 이름으로 조작할땐 loc
+
+
+"""
+https://nittaku.tistory.com/110
+print(type(semi_num_of_trees)) -> <class 'pandas.core.series.Series'>
+print(type(df)) -> <class 'pandas.core.frame.DataFrame'>
+둘이 다른 타입이여서 데이터프레임 방식의 행 조작이 series에서 안먹혔었음. -> pd.DataFrame()으로 series를 묶어주면 dataframe으로 관리할 수 있음.
+"""
+new_list = []
+for i in range(len(sort_of_trees)):
+    new_list.append(semi_num_of_trees.iloc[i])
+
+print(new_list)
